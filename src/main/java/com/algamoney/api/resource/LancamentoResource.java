@@ -8,6 +8,8 @@ import com.algamoney.api.service.LancamentoService;
 import com.algamoney.api.service.exception.PessoaInexistenteOuInativaException;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,9 +34,8 @@ public class LancamentoResource {
     }
 
     @GetMapping
-    public ResponseEntity<List<Lancamento>> listar(LancamentoFilter lancamentoFilter) {
-        List<Lancamento> lancamentos = lancamentoRepository.filtrar(lancamentoFilter);
-        return !lancamentos.isEmpty() ? ResponseEntity.ok(lancamentos) : ResponseEntity.noContent().build();
+    public Page<Lancamento> listar(LancamentoFilter lancamentoFilter, Pageable pageable) {
+        return lancamentoRepository.filtrar(lancamentoFilter, pageable);
     }
 
     @GetMapping("/{codigo}")
@@ -58,7 +59,7 @@ public class LancamentoResource {
     }
 
     @ExceptionHandler({PessoaInexistenteOuInativaException.class})
-    public ResponseEntity<Object> handlePessoaInexistenteOuInativaException(PessoaInexistenteOuInativaException ex){
+    public ResponseEntity<Object> handlePessoaInexistenteOuInativaException(PessoaInexistenteOuInativaException ex) {
         String mensagemUsuario = messageSource.getMessage("pessoa.inexistente-ou-inativa", null, LocaleContextHolder.getLocale());
         String mensagemDesenvolvedor = ex.toString();
         List<AlgamoneyExceptionHandler.Erro> erros = List.of(new AlgamoneyExceptionHandler.Erro(mensagemUsuario, mensagemDesenvolvedor));
