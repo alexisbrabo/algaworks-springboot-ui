@@ -1,47 +1,36 @@
 package com.algamoney.api.config;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.crypto.spec.SecretKeySpec;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecurityExpressionHandler;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
-@SuppressWarnings("deprecation")
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 public class ResourceServerConfig extends WebSecurityConfigurerAdapter {
 
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser("admin@algamoney.com")
-                .password("admin")
-                .roles("ROLE");
-    }
-
-    @Override
     public void configure(HttpSecurity http) throws Exception {
 
         http.authorizeRequests()
-                .antMatchers("/categorias").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -65,7 +54,7 @@ public class ResourceServerConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+        return new BCryptPasswordEncoder();
     }
 
     private JwtAuthenticationConverter jwtAuthenticationConverter() {
@@ -81,12 +70,16 @@ public class ResourceServerConfig extends WebSecurityConfigurerAdapter {
             Collection<GrantedAuthority> grantedAuthorities = scopesAuthoritiesConverter.convert(jwt);
 
             grantedAuthorities.addAll(authorities.stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toList()));
+                    .map(SimpleGrantedAuthority::new).toList());
 
             return grantedAuthorities;
         });
 
         return jwtAuthenticationConverter;
+    }
+
+    @Bean
+    public MethodSecurityExpressionHandler createMethodSecurityExpressionHandler() {
+        return new OAuth2MethodSecurityExpressionHandler();
     }
 }

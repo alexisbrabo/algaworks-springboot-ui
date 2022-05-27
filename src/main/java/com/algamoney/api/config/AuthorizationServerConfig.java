@@ -1,8 +1,10 @@
 package com.algamoney.api.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
@@ -11,7 +13,6 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
-import org.springframework.security.oauth2.provider.token.store.jwk.JwkTokenStore;
 
 @Configuration
 @EnableAuthorizationServer
@@ -21,32 +22,38 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     private final PasswordEncoder passwordEncoder;
 
-    public AuthorizationServerConfig(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
+    private final UserDetailsService userDetailsService;
+
+    public AuthorizationServerConfig(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService) {
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory()
                 .withClient("angular")
-                .secret(passwordEncoder.encode("@ngul@r0")) // @ngul@r0
+                .secret("$2a$10$cOF50fTcuitKcrOLg6K1gOG/CKN0fThKU3tWnWd.U76YlMQFuXfTC") // @ngul@r0
                 .scopes("read", "write")
-                .authorizedGrantTypes("password")
-                .accessTokenValiditySeconds(1800)
+                .authorizedGrantTypes("password", "refresh_token")
+                .accessTokenValiditySeconds(20)
                 .and()
                 .withClient("mobile")
                 .secret(passwordEncoder.encode("m0b1l30")) // m0b1l30
                 .scopes("read")
                 .authorizedGrantTypes("password")
-                .accessTokenValiditySeconds(1800);
+                .accessTokenValiditySeconds(20).refreshTokenValiditySeconds(3600 * 24);
     }
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.authenticationManager(authenticationManager)
+        endpoints
+                .authenticationManager(authenticationManager)
+                .userDetailsService(userDetailsService)
                 .accessTokenConverter(accessTokenConverter())
-                .tokenStore(tokenStore());
+                .tokenStore(tokenStore())
+                .reuseRefreshTokens(false);
     }
 
     @Bean

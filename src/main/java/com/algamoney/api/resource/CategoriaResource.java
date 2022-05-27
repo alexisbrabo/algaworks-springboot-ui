@@ -3,6 +3,7 @@ package com.algamoney.api.resource;
 import com.algamoney.api.model.Categoria;
 import com.algamoney.api.repository.CategoriaRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -21,12 +22,14 @@ public class CategoriaResource {
     }
 
     @GetMapping
-    public ResponseEntity listar() {
+    @PreAuthorize("hasAuthority('ROLE_PESQUISAR_CATEGORIA') and hasAuthority('SCOPE_read')" )
+    public ResponseEntity<List<Categoria>> listar() {
         List<Categoria> categorias = categoriaRepository.findAll();
         return !categorias.isEmpty() ? ResponseEntity.ok(categorias) : ResponseEntity.noContent().build();
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_CADASTRAR_CATEGORIA') and hasAuthority('SCOPE_write')")
     public ResponseEntity criar(@Valid @RequestBody Categoria categoria) {
         Categoria categoriaSalva = categoriaRepository.save(categoria);
 
@@ -36,6 +39,7 @@ public class CategoriaResource {
     }
 
     @GetMapping("/{codigo}")
+    @PreAuthorize("hasAuthority('ROLE_PESQUISAR_CATEGORIA') and hasAuthority('SCOPE_read')")
     public ResponseEntity buscarPeloCodigo(@PathVariable Long codigo) {
         return categoriaRepository.findById(codigo).isPresent() ? ResponseEntity.ok(categoriaRepository.findById(codigo).get()) : ResponseEntity.notFound().build();
     }
