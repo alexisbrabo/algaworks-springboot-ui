@@ -5,7 +5,6 @@ import com.algamoney.api.model.Pessoa;
 import com.algamoney.api.repository.LancamentoRepository;
 import com.algamoney.api.repository.PessoaRepository;
 import com.algamoney.api.service.exception.PessoaInexistenteOuInativaException;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

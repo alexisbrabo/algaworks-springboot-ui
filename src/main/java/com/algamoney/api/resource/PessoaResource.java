@@ -27,14 +27,14 @@ public class PessoaResource {
 
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_PESQUISAR_PESSOA') and hasAuthority('SCOPE_read')" )
-    public ResponseEntity listar() {
+    public ResponseEntity<List<Pessoa>> listar() {
         List<Pessoa> pessoas = pessoaRepository.findAll();
         return !pessoas.isEmpty() ? ResponseEntity.ok(pessoas) : ResponseEntity.noContent().build();
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_CADASTRAR_PESSOA') and hasAuthority('SCOPE_write')" )
-    public ResponseEntity criar(@Valid @RequestBody Pessoa pessoa) {
+    public ResponseEntity<Pessoa> criar(@Valid @RequestBody Pessoa pessoa) {
         Pessoa pessoaSalva = pessoaRepository.save(pessoa);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{codigo}").buildAndExpand(pessoaSalva.getCodigo()).toUri();
@@ -44,7 +44,7 @@ public class PessoaResource {
 
     @GetMapping("/{codigo}")
     @PreAuthorize("hasAuthority('ROLE_PESQUISAR_PESSOA') and hasAuthority('SCOPE_read')" )
-    public ResponseEntity buscarPeloCodigo(@PathVariable Long codigo) {
+    public ResponseEntity<Pessoa> buscarPeloCodigo(@PathVariable Long codigo) {
         return pessoaRepository.findById(codigo).isPresent() ? ResponseEntity.ok(pessoaRepository.findById(codigo).get()) : ResponseEntity.notFound().build();
     }
 

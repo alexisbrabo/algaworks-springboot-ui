@@ -1,7 +1,6 @@
 package com.algamoney.api.cors;
 
 import com.algamoney.api.config.property.AlgamoneyApiProperty;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -48,7 +47,7 @@ public class CorsFilter implements Filter {
     }
 
     @Override
-    public void init(FilterConfig arg0) throws ServletException {
+    public void init(FilterConfig arg0) {
     }
 
 }

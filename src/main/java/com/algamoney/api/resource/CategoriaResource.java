@@ -30,7 +30,7 @@ public class CategoriaResource {
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_CADASTRAR_CATEGORIA') and hasAuthority('SCOPE_write')")
-    public ResponseEntity criar(@Valid @RequestBody Categoria categoria) {
+    public ResponseEntity<Categoria> criar(@Valid @RequestBody Categoria categoria) {
         Categoria categoriaSalva = categoriaRepository.save(categoria);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{codigo}").buildAndExpand(categoriaSalva.getCodigo()).toUri();
@@ -40,7 +40,7 @@ public class CategoriaResource {
 
     @GetMapping("/{codigo}")
     @PreAuthorize("hasAuthority('ROLE_PESQUISAR_CATEGORIA') and hasAuthority('SCOPE_read')")
-    public ResponseEntity buscarPeloCodigo(@PathVariable Long codigo) {
+    public ResponseEntity<Categoria> buscarPeloCodigo(@PathVariable Long codigo) {
         return categoriaRepository.findById(codigo).isPresent() ? ResponseEntity.ok(categoriaRepository.findById(codigo).get()) : ResponseEntity.notFound().build();
     }
 }
